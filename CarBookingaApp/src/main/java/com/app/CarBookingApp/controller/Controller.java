@@ -1,9 +1,12 @@
 package com.app.CarBookingApp.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +32,7 @@ public class Controller {
 	
 	@PostMapping("/addUser")
 	public ResponseEntity<?> addUser(@RequestBody UserDTO user){
+		System.out.println("in add user");
 		return new ResponseEntity<String>(userService.addUser(user), HttpStatus.OK);
 	}
 	
@@ -40,14 +44,18 @@ public class Controller {
 	@GetMapping("/findRide")
 	public ResponseEntity<?> findRide(@RequestBody  UserFindRideDTO userFindRideDTO){
 		Location source = new Location(userFindRideDTO.getSourceX(), userFindRideDTO.getSourceY());
-		
-		// to use to update driver final location
-		// Location destination = new Location(userFindRideDTO.getDestinationX(), userFindRideDTO.getDestinationY());
-		
-		Driver driver = driverService.findRide(source).orElse(null);
-		if(driver == null) {
+
+		List<Driver> driverList = driverService.findRide(source);
+		if(driverList == null) {
 			return new ResponseEntity<String>("No Ride Found", HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<Driver>(driver, HttpStatus.OK);
+		return new ResponseEntity<List<Driver>>(driverList, HttpStatus.OK);
+	}
+	
+	@PostMapping("/selectRide/{id}")
+	public ResponseEntity<?> chooseRide(@RequestBody UserFindRideDTO userFindRideDTO, @PathVariable Long id ){
+		Location source = new Location(userFindRideDTO.getSourceX(), userFindRideDTO.getSourceY());
+
+		return new ResponseEntity<String>(driverService.chooseRide(id, source ), HttpStatus.OK);
 	}
 }

@@ -1,6 +1,8 @@
 package com.app.CarBookingApp.service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.CarBookingApp.DTO.DriverDTO;
+import com.app.CarBookingApp.DTO.UserFindRideDTO;
 import com.app.CarBookingApp.pojos.Driver;
 import com.app.CarBookingApp.pojos.Location;
 import com.app.CarBookingApp.pojos.Person;
@@ -42,15 +45,23 @@ public class DriverService {
 		return "Status changed";
 	}
 	
-	public Optional<Driver> findRide(Location source){
+	public List<Driver> findRide(Location source){
 		
 		return driverRepo.findAll().stream()
 				.filter(d -> d.isAvailable() && distance(d.getLocation() , source)<= 5)
-				.sorted((d1,d2) -> distance(d1.getLocation(),source).compareTo(distance(d2.getLocation(),source))).findFirst();
+				.collect(Collectors.toList());
 	}
 	
 	public Double distance(Location loc1 , Location loc2) {
 		return Math.hypot(Math.abs(loc1.getX() - loc2.getX()), Math.abs(loc1.getY() - loc2.getY()));
+	}
+	
+	public String chooseRide(Long driverID , Location source) {
+		Driver driver = driverRepo.findById(driverID)
+				.orElseThrow(() -> new RuntimeException("Invalid driver id"));
+		
+		return "Ride successfully choosen with "+ driver.getDriver().getName() + 
+				" driver coming to your location and is " + distance(driver.getLocation(), source)  +" km far";
 	}
 	
 
